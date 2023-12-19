@@ -1,14 +1,30 @@
 # OpenApi::Specs
 
-## Introduction
+## Status
 
-Leverages RSwag to generate OpenAPI documentation from specs, but taking a hybrid apporach where
-specs are defined in YAML format with a similar structure to OpenAPI.
+This gem leverages [RSwag](https://github.com/rswag/rswag) to generate OpenAPI documentation from specs, but takes a hybrid apporach where
+specs are defined in YAML format first, rather than rspec blocks, with a similar structure to OpenAPI. Essentially it is just using Rswag more as a runner and compliler, than a generator. The rational here is that YAML files are more structured than ruby files and can be compared (diffed) across versions (though in practice, the final OpenAPI file has been suitable for this).
 
-The rational here is that yml files are more structured and can be compared across versions.
+The approach was developed in 2019 (outside of Cutover), first applied to [Core](https://github.com/gocutover/core), then to the [Public Api](https://github.com/gocutover/public-api). The approach works well, but given resource could be evolved based on what we've learnt.
 
-A future version of this gem will go futher start from a completely documentation first approach
-of generation the OpenAPI document and wiring it into with 'x-spec' directives.
+### Pros
+
+- Structured YAML, unlike RSWag, keeps specs focused on the API schema and testing http statuses (rather than functionality).
+- Simple to write specs
+- Saves real examples to the file (leveraged in the Public API as real mock data)
+
+### Cons
+
+- YAML files are currently a hybrid of static OpenAPI syntax and RSpec modifiers (plus some sugar), which abstracts learning of OpenAPI for new users.
+- Because of this, the raw files cannot be used directly with OpenAPI tooling such as [Stoplight Studio](https://github.com/stoplightio/studio)
+
+### Future
+
+The current approach works well for Core where there are extensive `let:` statements and you are testing real functionality in a legacy environment, but for designing new APIs (such as Public API) a more document driven approach would be preferable. A v2.0 of this gem would likely take a raw OpenAPI file, and run it within RSpec, then output a new version of the file with real examples mixed in (if necessary). Effectively a simpler tool that auto generates specs from the document, rather generating documentation from specs (RSWAG). 
+
+To move in this direction, work is being undertaken in the current iteration to move the YAML files closer to compliant OpenAPI. For example, the additional syntax (`let:`, `focus:` etc) should be namespaced within an `x-spec:` object) and the syntax sugar should be replaced with vanilla OpenAPI/JSON Schema. 
+
+Initial tests with Stuoplight Studio, showed it was hard to break the `"paths"` section up into separate files using `$ref`, so there's also a question about navigating one big YAML vs individual files (which helps when working on specs, using `focus: true` etc).
 
 ## Examples
 
