@@ -12,7 +12,7 @@ module OpenApi
           submit_request(example.metadata)
 
           # HACK, solves issue with [OpenStruct.new] slipping through
-          if last_response.status == 204 &&
+          if respond_to?(:last_response) && last_response.status == 204 &&
                last_response.instance_variable_get(:@body).first.is_a?(OpenStruct)
             body = last_response.instance_variable_get(:@body).first.to_h
             body = body.blank? ? '' : OpenStruct.new(body)

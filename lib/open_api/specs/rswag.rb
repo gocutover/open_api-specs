@@ -200,7 +200,7 @@ module Rswag
             next if brackets.blank? && value.is_a?(Array)
             next if brackets.present? && value.is_a?(Array) == false
 
-            path_template.concat(i.zero? ? '?' : '&')
+            path_template.concat(path_template.include?('?') ? '&' : '?')
             path_template.concat(build_query_string_part(p, value, swagger_doc))
             # END HACK
 
