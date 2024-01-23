@@ -64,11 +64,10 @@ module OpenApi
         description = example.metadata[:example_description] || 'example'
         example.metadata[:response][:examples].deep_merge!(
           'application/json' => {
-            # description => {
-            #   summary: example.metadata[:example_description],
-            #   value: example_from_body(response.body)
-            # }.compact
-            description => example_from_body(response.body)
+            description => {
+              summary: example.metadata[:example_description],
+              value: example_from_body(response.body)
+            }.compact
           }
         )
       end
