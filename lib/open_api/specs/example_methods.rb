@@ -51,8 +51,9 @@ module OpenApi
 
         # mix in spec example
         request.body.rewind
-        examples[example.metadata[:example_description] || 'example'] ||= {
-          summary: example.metadata[:example_description],
+        description = example.metadata[:example_description] || 'example'
+        examples[description.parameterize(separator: '_')] ||= {
+          summary: description,
           value: JSON.parse(request.body.read)
         }.compact
 
@@ -64,8 +65,8 @@ module OpenApi
         description = example.metadata[:example_description] || 'example'
         example.metadata[:response][:examples].deep_merge!(
           'application/json' => {
-            description => {
-              summary: example.metadata[:example_description],
+            description.parameterize(separator: '_') => {
+              summary: description,
               value: example_from_body(response.body)
             }.compact
           }
