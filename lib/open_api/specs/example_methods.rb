@@ -54,7 +54,7 @@ module OpenApi
         description = example.metadata[:example_description] || 'example'
         examples[description.parameterize(separator: '_')] ||= {
           summary: description,
-          value: JSON.parse(request.body.read)
+          value: example_from_body(request.body.read)
         }.compact
 
         request_body[:content].deep_merge!('application/json' => { examples: examples })
