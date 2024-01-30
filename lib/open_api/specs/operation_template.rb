@@ -168,7 +168,7 @@ module OpenApi
       end
 
       def tags
-        attributes[:tags]
+        Array(attributes[:tags]).flatten.join(',')
       end
 
       #
