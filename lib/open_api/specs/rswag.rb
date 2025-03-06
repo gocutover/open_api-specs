@@ -166,7 +166,7 @@ module Rswag
         uses_base_path = swagger_doc[:basePath].present?
 
         if open_api_3_doc && uses_base_path
-          ActiveSupport::Deprecation.warn('Rswag::Specs: WARNING: basePath is replaced in OpenAPI3! Update your swagger_helper.rb')
+          Rswag::Specs.deprecator.warn('Rswag::Specs: WARNING: basePath is replaced in OpenAPI3! Update your swagger_helper.rb')
         end
 
         if uses_base_path
