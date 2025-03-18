@@ -8,7 +8,7 @@ module OpenApi
 
       # Process the request with RSwag, and add examples
       def process_example(config, example)
-        ActiveSupport::Deprecation.silence do
+        Rails.application.deprecators.silence do
           submit_request(example.metadata)
 
           # HACK, solves issue with [OpenStruct.new] slipping through
