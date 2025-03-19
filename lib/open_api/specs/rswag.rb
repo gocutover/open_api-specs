@@ -100,7 +100,7 @@ module Rswag
       def validate!(metadata, request)
         return if metadata[:response][:code] == '400' # expected to fail
 
-        swagger_doc = ActiveSupport::Deprecation.silence { @config.get_swagger_doc(metadata[:swagger_doc]) }
+        swagger_doc = Rails.application.deprecators.silence { @config.get_swagger_doc(metadata[:swagger_doc]) }
 
         validate_headers!(metadata, request[:headers])
         validate_body!(metadata, swagger_doc, request.body.read)

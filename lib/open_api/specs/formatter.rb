@@ -34,7 +34,7 @@ module OpenApi
         return if metadata[:document] == false
         return unless metadata.key?(:response)
 
-        swagger_doc = ActiveSupport::Deprecation.silence { @config.get_swagger_doc(metadata[:swagger_doc]) }
+        swagger_doc = Rails.application.deprecators.silence { @config.get_swagger_doc(metadata[:swagger_doc]) }
 
         unless doc_version(swagger_doc).start_with?('2')
           # This is called multiple times per file!
