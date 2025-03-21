@@ -8,23 +8,21 @@ module OpenApi
 
       # Process the request with RSwag, and add examples
       def process_example(config, example)
-        Rails.application.deprecators.silence do
-          submit_request(example.metadata)
+        submit_request(example.metadata)
 
-          # HACK, solves issue with [OpenStruct.new] slipping through
-          if respond_to?(:last_response) && last_response.status == 204 &&
-               last_response.instance_variable_get(:@body).first.is_a?(OpenStruct)
-            body = last_response.instance_variable_get(:@body).first.to_h
-            body = body.blank? ? '' : OpenStruct.new(body)
-            last_response.body = [body]
-          end
-
-          ::Rswag::Specs::RequestValidator.new.validate!(example.metadata, request)
-          ::Rswag::Specs::ResponseValidator.new.validate!(example.metadata, response)
-
-          add_request_examples(example)
-          add_response_examples(example)
+        # HACK, solves issue with [OpenStruct.new] slipping through
+        if respond_to?(:last_response) && last_response.status == 204 &&
+             last_response.instance_variable_get(:@body).first.is_a?(OpenStruct)
+          body = last_response.instance_variable_get(:@body).first.to_h
+          body = body.blank? ? '' : OpenStruct.new(body)
+          last_response.body = [body]
         end
+
+        ::Rswag::Specs::RequestValidator.new.validate!(example.metadata, request)
+        ::Rswag::Specs::ResponseValidator.new.validate!(example.metadata, response)
+
+        add_request_examples(example)
+        add_response_examples(example)
 
         puts_request_response if config[:focus]
       rescue StandardError => e
