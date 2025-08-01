@@ -34,7 +34,7 @@ module OpenApi
         return if metadata[:document] == false
         return unless metadata.key?(:response)
 
-        swagger_doc = @config.get_swagger_doc(metadata[:swagger_doc])
+        swagger_doc = @config.get_openapi_spec(metadata[:swagger_doc])
 
         unless doc_version(swagger_doc).start_with?('2')
           # This is called multiple times per file!
@@ -50,7 +50,7 @@ module OpenApi
       end
 
       def stop(_notification = nil)
-        @config.swagger_docs.each do |url_path, doc|
+        @config.openapi_specs.each do |url_path, doc|
           unless doc_version(doc).start_with?('2')
             doc[:paths]&.each_pair do |_k, v|
               v.each_pair do |_verb, value|
