@@ -89,7 +89,7 @@ module OpenApi
             end
           end
 
-          file_path = File.join(@config.swagger_root, url_path)
+          file_path = File.join(@config.openapi_root, url_path)
           dirname = File.dirname(file_path)
           FileUtils.mkdir_p dirname unless File.exist?(dirname)
 
@@ -109,7 +109,7 @@ module OpenApi
       private
 
       def pretty_generate(doc)
-        if @config.swagger_format == :yaml
+        if @config.openapi_format == :yaml
           clean_doc = yaml_prepare(doc)
           YAML.dump(clean_doc)
         else # config errors are thrown in 'def swagger_format', no throw needed here

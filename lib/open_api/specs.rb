@@ -25,7 +25,7 @@ module OpenApi
         config.include ExampleMethods
 
         config.add_setting :open_api_example_cleaner
-        config.swagger_dry_run = false
+        config.rswag_dry_run = false
       end
     end
   end
