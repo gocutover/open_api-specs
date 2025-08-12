@@ -7,16 +7,12 @@ require 'api_helper'
 module OpenApi
   module Specs
     class Formatter < ::RSpec::Core::Formatters::BaseTextFormatter
-      ActiveSupport::Deprecation.warn('Rswag::Specs: WARNING: Support for Ruby 2.6 will be dropped in v3.0') if RUBY_VERSION.start_with? '2.6'
-
       if Rswag::Specs::RSPEC_VERSION > 2
         ::RSpec::Core::Formatters.register self, :example_group_finished, :stop
-      else
-        ActiveSupport::Deprecation.warn('Rswag::Specs: WARNING: Support for RSpec 2.X will be dropped in v3.0')
       end
 
       def initialize(output, config = Rswag::Specs.config)
-        @output = output
+        super(output)
         @config = config
 
         @output.puts 'Generating Swagger docs ...'
@@ -34,7 +30,7 @@ module OpenApi
         return if metadata[:document] == false
         return unless metadata.key?(:response)
 
-        swagger_doc = @config.get_openapi_spec(metadata[:swagger_doc])
+        swagger_doc = @config.get_openapi_spec(metadata[:openapi_spec] || metadata[:swagger_doc])
 
         unless doc_version(swagger_doc).start_with?('2')
           # This is called multiple times per file!
@@ -82,6 +78,11 @@ module OpenApi
                     end
                   end
 
+                  enum_param = value.dig(:parameters).find{|p| p[:enum]}
+                  if enum_param && enum_param.is_a?(Hash)
+                    enum_param[:description] = generate_enum_description(enum_param)
+                  end
+
                   value[:parameters].reject! { |p| p[:in] == :body || p[:in] == :formData }
                 end
                 remove_invalid_operation_keys!(value)
@@ -112,7 +113,7 @@ module OpenApi
         if @config.openapi_format == :yaml
           clean_doc = yaml_prepare(doc)
           YAML.dump(clean_doc)
-        else # config errors are thrown in 'def swagger_format', no throw needed here
+        else # config errors are thrown in 'def openapi_format', no throw needed here
           # HACK: gsubs to remove whitespace inside  {} and [] as it seems to alternate inconsistently.
           JSON.pretty_generate(doc).gsub(/{(\s)*}/, '{}').gsub(/\[(\s)*\]/, '[]')
         end
@@ -194,7 +195,7 @@ module OpenApi
       def upgrade_servers!(swagger_doc)
         return unless swagger_doc[:servers].nil? && swagger_doc.key?(:schemes)
 
-        ActiveSupport::Deprecation.warn('Rswag::Specs: WARNING: schemes, host, and basePath are replaced in OpenAPI3! Rename to array of servers[{url}] (in swagger_helper.rb)')
+        Rswag::Specs.deprecator.warn('Rswag::Specs: WARNING: schemes, host, and basePath are replaced in OpenAPI3! Rename to array of servers[{url}] (in swagger_helper.rb)')
 
         swagger_doc[:servers] = { urls: [] }
         swagger_doc[:schemes].each do |scheme|
@@ -214,14 +215,14 @@ module OpenApi
         schemes.each do |name, v|
           next unless v.key?(:flow)
 
-          ActiveSupport::Deprecation.warn("Rswag::Specs: WARNING: securityDefinitions flow is replaced in OpenAPI3! Rename to components/securitySchemes/#{name}/flows[] (in swagger_helper.rb)")
+          Rswag::Specs.deprecator.warn("Rswag::Specs: WARNING: securityDefinitions flow is replaced in OpenAPI3! Rename to components/securitySchemes/#{name}/flows[] (in swagger_helper.rb)")
           flow = swagger_doc[:components][:securitySchemes][name].delete(:flow).to_s
           if flow == 'accessCode'
-            ActiveSupport::Deprecation.warn("Rswag::Specs: WARNING: securityDefinitions accessCode is replaced in OpenAPI3! Rename to clientCredentials (in swagger_helper.rb)")
+            Rswag::Specs.deprecator.warn("Rswag::Specs: WARNING: securityDefinitions accessCode is replaced in OpenAPI3! Rename to clientCredentials (in swagger_helper.rb)")
             flow = 'authorizationCode'
           end
           if flow == 'application'
-            ActiveSupport::Deprecation.warn("Rswag::Specs: WARNING: securityDefinitions application is replaced in OpenAPI3! Rename to authorizationCode (in swagger_helper.rb)")
+            Rswag::Specs.deprecator.warn("Rswag::Specs: WARNING: securityDefinitions application is replaced in OpenAPI3! Rename to authorizationCode (in swagger_helper.rb)")
             flow = 'clientCredentials'
           end
           flow_elements = swagger_doc[:components][:securitySchemes][name].except(:type).each_with_object({}) do |(k, _v), a|
@@ -238,6 +239,14 @@ module OpenApi
         value.delete(:produces) if value[:produces]
         value.delete(:request_examples) if value[:request_examples]
         value[:parameters].each { |p| p.delete(:getter) } if value[:parameters]
+      end
+
+      def generate_enum_description(param)
+        enum_description = "#{param[:description]}:\n "
+        param[:enum].each do |k,v|
+          enum_description += "* `#{k}` #{v}\n "
+        end
+        enum_description
       end
     end
   end
