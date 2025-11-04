@@ -100,7 +100,7 @@ module Rswag
       def validate!(metadata, request)
         return if metadata[:response][:code] == '400' # expected to fail
 
-        swagger_doc = @config.get_swagger_doc(metadata[:swagger_doc])
+        swagger_doc = @config.get_openapi_spec(metadata[:swagger_doc])
 
         validate_headers!(metadata, request[:headers])
         validate_body!(metadata, swagger_doc, request.body.read)
@@ -205,45 +205,6 @@ module Rswag
             # END HACK
 
           end
-        end
-      end
-    end
-
-    class Configuration
-      # Use new ActiveSupport syntax for silencing deprecations (needed for Rails 7.1+ in core), can be removed
-      # if/when we bump up rswag versions (current is 2.12) and the warnings are no longer relevant
-
-      def deprecator
-        @deprecator ||= ActiveSupport::Deprecation.new
-      end
-
-      def swagger_docs
-        deprecator.silence do
-          deprecator.warn('Rswag::Specs: WARNING: The method will be renamed to "openapi_specs" in v3.0')
-          @swagger_docs ||= begin
-            if @rspec_config.swagger_docs.nil? || @rspec_config.swagger_docs.empty?
-              raise ConfigurationError, 'No swagger_docs defined. See swagger_helper.rb'
-            end
-
-            @rspec_config.swagger_docs
-          end
-        end
-      end
-
-      def get_swagger_doc(name)
-        deprecator.silence do
-          deprecator.warn('Rswag::Specs: WARNING: The method will be renamed to "get_openapi_spec" in v3.0')
-          return swagger_docs.values.first if name.nil?
-          raise ConfigurationError, "Unknown swagger_doc '#{name}'" unless swagger_docs[name]
-
-          swagger_docs[name]
-        end
-      end
-
-      def swagger_strict_schema_validation
-        deprecator.silence do
-          deprecator.warn('Rswag::Specs: WARNING: The method will be renamed to "openapi_strict_schema_validation" in v3.0')
-          @swagger_strict_schema_validation ||= (@rspec_config.swagger_strict_schema_validation || false)
         end
       end
     end
