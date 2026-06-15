@@ -102,11 +102,22 @@ module Rswag
 
         swagger_doc = @config.get_openapi_spec(metadata[:swagger_doc])
 
-        validate_headers!(metadata, request[:headers])
-        validate_body!(metadata, swagger_doc, request.body.read)
+        validate_headers!(metadata, request_headers(request))
+        validate_body!(metadata, swagger_doc, request.raw_post)
       end
 
       private
+
+      # Check if request responds to ActionDispatch::Request (Rails 8+/rswag >=2.16), fall back
+      # to old behavior if customer is still on Rails 7. Can be removed/amended after
+      # all clients are migrated
+      def request_headers(request)
+        if request.respond_to?(:headers)
+          request.headers
+        elsif request.respond_to?(:[])
+          request[:headers]
+        end
+      end
 
       def validate_headers!(metadata, headers)
         return # @todo implement
