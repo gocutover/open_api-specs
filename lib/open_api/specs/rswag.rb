@@ -103,7 +103,7 @@ module Rswag
         swagger_doc = @config.get_openapi_spec(metadata[:swagger_doc])
 
         validate_headers!(metadata, request_headers(request))
-        validate_body!(metadata, swagger_doc, request.raw_post)
+        validate_body!(metadata, swagger_doc, request_body(request))
       end
 
       private
@@ -116,6 +116,16 @@ module Rswag
           request.headers
         elsif request.respond_to?(:[])
           request[:headers]
+        end
+      end
+
+      # ActionDispatch::Request (Rails) exposes #raw_post; a plain Rack::Request (used by
+      # non-Rails Rack apps) does not, so fall back to reading the body directly.
+      def request_body(request)
+        if request.respond_to?(:raw_post)
+          request.raw_post
+        else
+          request.body.read
         end
       end
 
