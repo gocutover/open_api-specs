@@ -11,8 +11,8 @@ Gem::Specification.new do |spec|
   spec.files = Dir['lib/**/*']
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'rspec', '>= 3.0.0'
   spec.add_dependency 'open_api-schema_validator', '~> 0.2.0'
-  spec.add_dependency 'rswag-api', '2.14.0'
-  spec.add_dependency 'rswag-specs', '2.14.0'
+  spec.add_dependency 'rspec', '>= 3.0.0'
+  spec.add_dependency 'rswag-api', '~> 2.17'
+  spec.add_dependency 'rswag-specs', '~> 2.17'
 end
